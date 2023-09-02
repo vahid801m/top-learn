@@ -1,0 +1,122 @@
+﻿@using TopLearn.Core.DTOs.Course
+@using TopLearn.Core.Services.Interfaces
+@using TopLearn.DataLayer.Entities.Course
+@{
+    ViewData["Title"] = "همه دوره های سایت";
+}
+@inject ICourseService _courseService;
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#">تاپ لرن</a></li>
+            <li class="breadcrumb-item active"><a href="#">دوره ها</a></li>
+        </ul>
+    </nav>
+</div>
+
+<div class="top-bar">
+
+    <header>
+        <h1> دوره های <span> برنامه نویسی وب </span> </h1> <span>@_courseService.GetCourse().Item1.Count</span>
+    </header>
+
+    <div class="row">
+        <div class="col-md-4 col-sm-12 col-xs-12 pull-right">
+            <div class="input">
+                <input type="text" name="filter" placeholder="موضوع مورد نظر ...">
+                <button><i class="zmdi zmdi-search"></i></button>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 col-xs-12 pull-right">
+            <div class="switch-field available">
+                <input id="available-filter-1" name="getType" value="all" checked="" type="radio">
+                <label for="available-filter-1"> همه </label>
+                <input id="available-filter-2" name="getType" value="price" type="radio">
+                <label for="available-filter-2"> خریدنی </label>
+                <input id="available-filter-3" name="getType" value="free" type="radio">
+                <label for="available-filter-3"> رایگان </label>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 col-xs-12 pull-left">
+            <div class="select-ddl">
+                <select name="orderByType">
+                    <option value="date"> تاریخ انتشار </option>
+                    <option value="updatedate"> تاریخ بروز رسانی </option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+
+    <aside class="col-lg-3 col-md-4 col-sm-12 col-xs-12">
+
+        <section class="aside-section filter-by-price">
+            <header>
+                <h3> فیلتر بر اساس قیمت </h3>
+            </header>
+            <div class="price-range">
+                <input type="hidden" value="" id="min-value" name="startPrice">
+                <input type="hidden" value="" id="max-value" name="endPrice">
+                <div class="price-bar">
+                    <div id="priceFilter"></div>
+                </div>
+                <div class="max-price">تا <span id="max-text">500000</span> تومان</div>
+                <div class="min-price">از <span id="min-text">20000</span> تومان</div>
+                <div class="clearfix"></div>
+            </div>
+        </section>
+
+        <section class="aside-section filter-by-category">
+            <header>
+                <h3> دسته بندی موضوعات </h3>
+            </header>
+            <div class="inner">
+                @{
+                    List<CourseGroup> groups = ViewBag.group as List<CourseGroup>;
+                    List<int> selected = ViewBag.SelectedGroups as List<int>;
+                }
+                <ul>
+                    @foreach (var group in groups.Where(g => g.ParentId == null))
+                    {
+                        <li>
+                            <input onchange="changeGroup()" type="checkbox" @((selected.Any(s=>s==group.GroupId)?"checked":"")) name="selectedGroups" value="@group.GroupId" id="cat-1">
+                            <label for="cat-1"> @group.GroupTitle </label>
+                            @if (groups.Any(g => g.ParentId == group.GroupId))
+                            {
+                                <ul>
+                                    @foreach (var sub in groups.Where(g => g.ParentId == group.GroupId))
+                                    {
+                                        <li>
+                                            <input onchange="changeGroup()" @((selected.Any(s=>s==sub.GroupId)?"checked":"")) type="checkbox" name="selectedGroups" value="@sub.GroupId" id="cat-1">
+                                            <label for="cat-1"> @sub.GroupTitle </label>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+
+                        </li>
+                    }
+                </ul>
+            </div>
+        </section>
+
+    </aside>
+
+    <div class="col-lg-9 col-md-8 col-sm-12 col-xs-12">
+
+        <section class="terms-items">
+            <div class="row">
+                @{
+                    List<ShowCourseListItemViewModel> course = ViewBag.Course as List<ShowCourseListItemViewModel>;
+                }
+                @if (course != null)
+                {
+                    @foreach (var item in course)
+                    {
+                        <partial name="_BoxCourse" model="@item" />
+                    }
+                }
+            </div>
+        </section>
